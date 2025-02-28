@@ -1,125 +1,203 @@
 import json
+import time
+from datetime import datetime
 
 class PhysicalLayer:
     def send(self, data):
-        print("[Physical Layer] Sending data as bits")
-        bits = ''.join(format(ord(char), '08b') for char in data)
-        return bits
+        timestamp = datetime.now().strftime("%H:%M:%S.%f")[:-3]
+        print(f"[{timestamp}] 📡 Physical Layer: Converting data to binary stream")
+        try:
+            bits = ''.join(format(ord(char), '08b') for char in data)
+            print(f"[{timestamp}] ✓ Physical Layer: Successfully converted {len(bits)} bits")
+            return bits
+        except Exception as e:
+            print(f"[{timestamp}] ❌ Physical Layer Error: Failed to convert data - {str(e)}")
+            raise
 
     def receive(self, bits):
-        print("[Physical Layer] Receiving data from bits")
-        chars = [chr(int(bits[i:i+8], 2)) for i in range(0, len(bits), 8)]
-        return ''.join(chars)
+        timestamp = datetime.now().strftime("%H:%M:%S.%f")[:-3]
+        print(f"[{timestamp}] 📡 Physical Layer: Receiving binary stream")
+        try:
+            chars = [chr(int(bits[i:i+8], 2)) for i in range(0, len(bits), 8)]
+            print(f"[{timestamp}] ✓ Physical Layer: Successfully decoded {len(chars)} characters")
+            return ''.join(chars)
+        except Exception as e:
+            print(f"[{timestamp}] ❌ Physical Layer Error: Failed to decode bits - {str(e)}")
+            raise
 
 
 class DataLinkLayer:
     def send(self, bits, mac_address):
-        print("[Data Link Layer] Creating frame with MAC address")
-        frame = {'MAC': mac_address, 'Data': bits}
+        timestamp = datetime.now().strftime("%H:%M:%S.%f")[:-3]
+        print(f"[{timestamp}] 🔗 Data Link Layer: Creating frame")
+        frame = {
+            'MAC_source': mac_address,
+            'MAC_dest': 'FF:FF:FF:FF:FF:FF',  # Broadcast address for demo
+            'Data': bits,
+            'CRC': hash(bits) % 100000,  # Simple checksum simulation
+            'timestamp': time.time()
+        }
+        print(f"[{timestamp}] ✓ Data Link Layer: Frame created with CRC: {frame['CRC']}")
         return frame
 
     def receive(self, frame):
-        print("[Data Link Layer] Extracting data from frame")
+        timestamp = datetime.now().strftime("%H:%M:%S.%f")[:-3]
+        print(f"[{timestamp}] 🔗 Data Link Layer: Processing frame from {frame['MAC_source']}")
         return frame['Data']
 
 
 class NetworkLayer:
     def send(self, frame, ip_address):
-        print("[Network Layer] Creating packet with IP address")
-        packet = {'IP': ip_address, 'Frame': frame}
+        timestamp = datetime.now().strftime("%H:%M:%S.%f")[:-3]
+        print(f"[{timestamp}] 🌐 Network Layer: Creating IP packet")
+        packet = {
+            'version': 4,  # IPv4
+            'source_ip': ip_address,
+            'dest_ip': '192.168.1.1',  # Example destination
+            'ttl': 64,
+            'protocol': 'TCP',
+            'payload': frame,
+            'timestamp': time.time()
+        }
+        print(f"[{timestamp}] ✓ Network Layer: Packet created with TTL: {packet['ttl']}")
         return packet
 
     def receive(self, packet):
-        print("[Network Layer] Extracting frame from packet")
-        return packet['Frame']
+        timestamp = datetime.now().strftime("%H:%M:%S.%f")[:-3]
+        print(f"[{timestamp}] 🌐 Network Layer: Processing packet from {packet['source_ip']}")
+        return packet['payload']
 
 
 class TransportLayer:
     def send(self, packet, seq_num):
-        print("[Transport Layer] Adding sequence number")
-        segment = {'Seq': seq_num, 'Packet': packet}
+        timestamp = datetime.now().strftime("%H:%M:%S.%f")[:-3]
+        print(f"[{timestamp}] 🚢 Transport Layer: Creating TCP segment")
+        segment = {
+            'source_port': 12345,
+            'dest_port': 80,
+            'sequence': seq_num,
+            'ack_number': 0,
+            'window_size': 64240,
+            'data': packet,
+            'timestamp': time.time()
+        }
+        print(f"[{timestamp}] ✓ Transport Layer: Segment created with seq: {seq_num}")
         return segment
 
     def receive(self, segment):
-        print("[Transport Layer] Extracting packet from segment")
-        return segment['Packet']
+        timestamp = datetime.now().strftime("%H:%M:%S.%f")[:-3]
+        print(f"[{timestamp}] 🚢 Transport Layer: Processing segment #{segment['sequence']}")
+        return segment['data']
 
 
 class SessionLayer:
     def send(self, segment, session_id):
-        print("[Session Layer] Managing session with ID")
-        session = {'SessionID': session_id, 'Segment': segment}
+        timestamp = datetime.now().strftime("%H:%M:%S.%f")[:-3]
+        print(f"[{timestamp}] 🔄 Session Layer: Establishing session")
+        session = {
+            'session_id': session_id,
+            'created_at': time.time(),
+            'status': 'active',
+            'data': segment,
+            'checksum': hash(str(segment)) % 100000
+        }
+        print(f"[{timestamp}] ✓ Session Layer: Session established: {session_id}")
         return session
 
     def receive(self, session):
-        print("[Session Layer] Extracting segment from session")
-        return session['Segment']
+        timestamp = datetime.now().strftime("%H:%M:%S.%f")[:-3]
+        print(f"[{timestamp}] 🔄 Session Layer: Validating session {session['session_id']}")
+        return session['data']
 
 
 class PresentationLayer:
     def send(self, session):
-        print("[Presentation Layer] Encoding session data")
-        encoded = json.dumps(session)
-        return encoded
+        timestamp = datetime.now().strftime("%H:%M:%S.%f")[:-3]
+        print(f"[{timestamp}] 🔠 Presentation Layer: Encoding and compressing data")
+        try:
+            encoded = json.dumps(session)
+            print(f"[{timestamp}] ✓ Presentation Layer: Data encoded successfully")
+            return encoded
+        except Exception as e:
+            print(f"[{timestamp}] ❌ Presentation Layer Error: Encoding failed - {str(e)}")
+            raise
 
     def receive(self, encoded):
-        print("[Presentation Layer] Decoding session data")
-        session = json.loads(encoded)
-        return session
+        timestamp = datetime.now().strftime("%H:%M:%S.%f")[:-3]
+        print(f"[{timestamp}] 🔠 Presentation Layer: Decoding data")
+        try:
+            session = json.loads(encoded)
+            print(f"[{timestamp}] ✓ Presentation Layer: Data decoded successfully")
+            return session
+        except json.JSONDecodeError as e:
+            print(f"[{timestamp}] ❌ Presentation Layer Error: Decoding failed - {str(e)}")
+            raise
 
 
 class ApplicationLayer:
     def send(self, message):
-        print("[Application Layer] Creating HTTP-like request")
-        request = {'HTTP_Request': message}
+        timestamp = datetime.now().strftime("%H:%M:%S.%f")[:-3]
+        print(f"[{timestamp}] 💻 Application Layer: Creating application data")
+        request = {
+            'protocol': 'HTTP/1.1',
+            'method': 'POST',
+            'content_type': 'text/plain',
+            'content_length': len(message),
+            'body': message,
+            'timestamp': time.time()
+        }
+        print(f"[{timestamp}] ✓ Application Layer: Request created")
         return request
 
     def receive(self, request):
-        print("[Application Layer] Extracting message from request")
-        return request['HTTP_Request']
+        timestamp = datetime.now().strftime("%H:%M:%S.%f")[:-3]
+        print(f"[{timestamp}] 💻 Application Layer: Processing {request['protocol']} request")
+        return request['body']
 
 
 if __name__ == "__main__":
-    message = "Hello, OSI Model!"
-    mac_address = "00:1B:44:11:3A:B7"
-    ip_address = "192.168.1.1"
-    seq_num = 1
-    session_id = "12345"
+    # Email message configuration
+    email_content = "Subject: Meeting Update\nHi team, the project meeting is scheduled for tomorrow at 2 PM."
+    device_mac = "A4:C3:F0:85:B2:DE"
+    sender_ip = "10.0.2.15"
+    packet_sequence = 42
+    email_session = "EMAIL_SESSION_789"
 
-    # Instantiate each layer
-    app = ApplicationLayer()
-    pres = PresentationLayer()
-    sess = SessionLayer()
-    trans = TransportLayer()
-    net = NetworkLayer()
-    data_link = DataLinkLayer()
-    phys = PhysicalLayer()
+    # Initialize network stack layers
+    application_layer = ApplicationLayer()
+    presentation_layer = PresentationLayer()
+    session_layer = SessionLayer()
+    transport_layer = TransportLayer()
+    network_layer = NetworkLayer()
+    datalink_layer = DataLinkLayer()
+    physical_layer = PhysicalLayer()
 
-    print("Starting OSI Model Simulation...")
+    print("\n=== Starting Email Transmission Through OSI Layers ===\n")
 
-    # Sending
-    app_data = app.send(message)
-    pres_data = pres.send(app_data)
-    sess_data = sess.send(pres_data, session_id)
-    trans_data = trans.send(sess_data, seq_num)
-    net_data = net.send(trans_data, ip_address)
-    link_data = data_link.send(json.dumps(net_data), mac_address)
-    phys_data = phys.send(json.dumps(link_data))
+    # Encapsulation process (sending)
+    print("--- Encapsulation Process Starting ---")
+    application_payload = application_layer.send(email_content)
+    encoded_payload = presentation_layer.send(application_payload)
+    session_payload = session_layer.send(encoded_payload, email_session)
+    transport_segment = transport_layer.send(session_payload, packet_sequence)
+    network_packet = network_layer.send(transport_segment, sender_ip)
+    datalink_frame = datalink_layer.send(json.dumps(network_packet), device_mac)
+    transmitted_bits = physical_layer.send(json.dumps(datalink_frame))
 
-    print("\n--- Data Sent ---\n")
+    print("\n=== Data Successfully Encapsulated and Transmitted ===\n")
 
-    # Receiving
-    received_bits = phys.receive(phys_data)
-    received_frame = json.loads(received_bits)
-    received_link_data = data_link.receive(received_frame)
-    received_packet = json.loads(received_link_data)
-    received_segment = net.receive(received_packet)
-    received_session = trans.receive(received_segment)
-    received_pres = sess.receive(received_session)
-    received_app = pres.receive(received_pres)
-    received_message = app.receive(received_app)
+    # Decapsulation process (receiving)
+    print("--- Decapsulation Process Starting ---")
+    received_binary = physical_layer.receive(transmitted_bits)
+    decoded_frame = json.loads(received_binary)
+    extracted_packet_data = datalink_layer.receive(decoded_frame)
+    decoded_packet = json.loads(extracted_packet_data)
+    extracted_segment = network_layer.receive(decoded_packet)
+    extracted_session_data = transport_layer.receive(extracted_segment)
+    extracted_payload = session_layer.receive(extracted_session_data)
+    decoded_content = presentation_layer.receive(extracted_payload)
+    final_message = application_layer.receive(decoded_content)
 
-
-    print("\n--- Data Received ---\n")
-    print("Received message:", received_message)
-    print("OSI Model Simulation Complete!")
+    print("\n=== Final Received Message ===")
+    print("Email Content:", final_message)
+    print("\n=== Email Transmission Complete ===")
