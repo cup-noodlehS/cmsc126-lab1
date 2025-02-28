@@ -32,9 +32,9 @@ class DataLinkLayer:
         print(f"[{timestamp}] 🔗 Data Link Layer: Creating frame")
         frame = {
             'MAC_source': mac_address,
-            'MAC_dest': 'FF:FF:FF:FF:FF:FF',  # Broadcast address for demo
+            'MAC_dest': 'FF:FF:FF:FF:FF:FF',
             'Data': bits,
-            'CRC': hash(bits) % 100000,  # Simple checksum simulation
+            'CRC': hash(bits) % 100000,
             'timestamp': time.time()
         }
         print(f"[{timestamp}] ✓ Data Link Layer: Frame created with CRC: {frame['CRC']}")
@@ -51,9 +51,9 @@ class NetworkLayer:
         timestamp = datetime.now().strftime("%H:%M:%S.%f")[:-3]
         print(f"[{timestamp}] 🌐 Network Layer: Creating IP packet")
         packet = {
-            'version': 4,  # IPv4
+            'version': 4,
             'source_ip': ip_address,
-            'dest_ip': '192.168.1.1',  # Example destination
+            'dest_ip': '192.168.1.1',
             'ttl': 64,
             'protocol': 'TCP',
             'payload': frame,
@@ -156,14 +156,12 @@ class ApplicationLayer:
 
 
 if __name__ == "__main__":
-    # Email message configuration
     email_content = "Subject: Meeting Update\nHi team, the project meeting is scheduled for tomorrow at 2 PM."
     device_mac = "A4:C3:F0:85:B2:DE"
     sender_ip = "10.0.2.15"
     packet_sequence = 42
     email_session = "EMAIL_SESSION_789"
 
-    # Initialize network stack layers
     application_layer = ApplicationLayer()
     presentation_layer = PresentationLayer()
     session_layer = SessionLayer()
@@ -174,7 +172,6 @@ if __name__ == "__main__":
 
     print("\n=== Starting Email Transmission Through OSI Layers ===\n")
 
-    # Encapsulation process (sending)
     print("--- Encapsulation Process Starting ---")
     application_payload = application_layer.send(email_content)
     encoded_payload = presentation_layer.send(application_payload)
@@ -186,7 +183,6 @@ if __name__ == "__main__":
 
     print("\n=== Data Successfully Encapsulated and Transmitted ===\n")
 
-    # Decapsulation process (receiving)
     print("--- Decapsulation Process Starting ---")
     received_binary = physical_layer.receive(transmitted_bits)
     decoded_frame = json.loads(received_binary)
