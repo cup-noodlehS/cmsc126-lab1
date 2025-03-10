@@ -1,6 +1,8 @@
 import json
 import time
 from datetime import datetime
+import uuid
+import socket
 
 class PhysicalLayer:
     def send(self, data):
@@ -157,8 +159,13 @@ class ApplicationLayer:
 
 if __name__ == "__main__":
     email_content = "Subject: Meeting Update\nHi team, the project meeting is scheduled for tomorrow at 2 PM."
-    device_mac = "A4:C3:F0:85:B2:DE"
-    sender_ip = "10.0.2.15"
+    
+    device_mac = ':'.join(['{:02x}'.format((uuid.getnode() >> elements) & 0xff) 
+                          for elements in range(0,8*6,8)][::-1])
+    
+    hostname = socket.gethostname()
+    sender_ip = socket.gethostbyname(hostname)
+    
     packet_sequence = 42
     email_session = "EMAIL_SESSION_789"
 
