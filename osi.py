@@ -140,6 +140,7 @@ class ApplicationLayer:
     def send(self, message):
         timestamp = datetime.now().strftime("%H:%M:%S.%f")[:-3]
         print(f"[{timestamp}] 💻 Application Layer: Creating application data")
+        print(f"[{timestamp}] 💻 Application Layer: Message: {message}")
         request = {
             'protocol': 'HTTP/1.1',
             'method': 'POST',
@@ -157,14 +158,30 @@ class ApplicationLayer:
         return request['body']
 
 
+def get_local_ip():
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))  # Google's DNS server
+        local_ip = s.getsockname()[0]
+        s.close()
+        return local_ip
+    except Exception:
+        return socket.gethostbyname(socket.gethostname())
+
+def get_mac_address():
+    mac = ':'.join(['{:02x}'.format((uuid.getnode() >> ele) & 0xff) 
+                    for ele in range(0, 48, 8)][::-1])
+    return mac
+
+
 if __name__ == "__main__":
     email_content = "Subject: Meeting Update\nHi team, the project meeting is scheduled for tomorrow at 2 PM."
     
-    device_mac = ':'.join(['{:02x}'.format((uuid.getnode() >> elements) & 0xff) 
-                          for elements in range(0,8*6,8)][::-1])
-    
-    hostname = socket.gethostname()
-    sender_ip = socket.gethostbyname(hostname)
+    device_mac = get_mac_address()
+    sender_ip = get_local_ip()
+
+    print(f"Device MAC: {device_mac}")
+    print(f"Sender IP: {sender_ip}")
     
     packet_sequence = 42
     email_session = "EMAIL_SESSION_789"
